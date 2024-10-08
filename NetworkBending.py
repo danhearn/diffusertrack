@@ -1,6 +1,6 @@
 from pythonosc import dispatcher, osc_server
 from typing import Optional
-from .network_bends import (
+from network_bends import (
     erosion,
     dilation,
     gradient,
