@@ -1,5 +1,5 @@
-from pythonosc import dispatcher, osc_server
-from typing import Optional
+#from pythonosc import  
+#from typing import Optional
 from network_bends import (
     erosion,
     dilation,
@@ -15,7 +15,7 @@ from network_bends import (
 )
 
 class NetworkBending:
-    def __init__(self, ip="127.0.0.1", port=9999):
+    def __init__(self):
         self.bend_rotate_x = False
         self.bend_rotate_y = False
         self.bend_rotate_z = False
@@ -37,30 +37,6 @@ class NetworkBending:
         self.rotate_z_radian = 0.0
         self.rotate_z_scaling_factor = 1.0
         self.scale_factor = 1
-
-        self.dispatcher = dispatcher.Dispatcher()
-        # Map incoming OSC messages to the osc_receive method
-        self.dispatcher.map("/rotate_x_radian", self.osc_receive)
-        self.dispatcher.map("/rotate_y_radian", self.osc_receive)
-        self.dispatcher.map("/rotate_z_radian", self.osc_receive)
-        self.dispatcher.map("/rotate_x_scaling_factor", self.osc_receive)
-        self.dispatcher.map("/rotate_y_scaling_factor", self.osc_receive)
-        self.dispatcher.map("/rotate_z_scaling_factor", self.osc_receive)
-        self.dispatcher.map("/scale_factor", self.osc_receive)
-        self.dispatcher.map("/layer", self.osc_receive)
-        self.dispatcher.map("/scale", self.osc_receive)
-        self.dispatcher.map("/reflect", self.osc_receive)
-        self.dispatcher.map("/erosion", self.osc_receive)
-        self.dispatcher.map("/dilation", self.osc_receive)
-        self.dispatcher.map("/gradient", self.osc_receive)
-        self.dispatcher.map("/sobel", self.osc_receive)
-        self.dispatcher.map("/add_rand_rows", self.osc_receive)
-        self.dispatcher.map("/normalize", self.osc_receive)
-        self.dispatcher.map("/rotate_x", self.osc_receive)
-        self.dispatcher.map("/rotate_y", self.osc_receive)
-        self.dispatcher.map("/rotate_z", self.osc_receive)
-
-        self.server = osc_server.ThreadingOSCUDPServer((ip, port), self.dispatcher)
 
 
     def osc_receive(self, address: str, *args):
@@ -174,12 +150,3 @@ class NetworkBending:
         samples[self.layer_selection] = sample
 
         return tuple(samples)
-    
-    def stop(self):
-        """Stops the OSC server."""
-        self.server.shutdown()
-
-    def serve_forever(self):
-        """Runs the OSC server and blocks until interrupted."""
-        print("OSC server running...")
-        self.server.serve_forever()
