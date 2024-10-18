@@ -74,7 +74,7 @@ class NetworkBending:
         elif address == "/add_rand_rows":
             self.bend_add_rand_rows = int(args[0])
         elif address == "/normalize":
-            self.normalize_bend = int(args[0])
+            self.normalize_bend = bool(args[0])
         elif address == "/rotate_x":
             self.bend_rotate_x = int(args[0])
         elif address == "/rotate_y":
