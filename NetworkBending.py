@@ -1,6 +1,6 @@
 #from pythonosc import  
 #from typing import Optional
-from network_bends import (
+from transformations import (
     erosion,
     dilation,
     gradient,
