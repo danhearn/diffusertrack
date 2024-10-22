@@ -41,7 +41,7 @@ class NetworkBending:
 
     def osc_receive(self, address: str, *args):
         """Receive OSC messages and update the network bending parameters."""
-        #print(f"Received OSC message: Address: {address}, Arguments: {args}")
+        print(f"Received OSC message: Address: {address}, Arguments: {args}")
 
         if address == "/layer": 
             self.layer_selection = int(args[0])

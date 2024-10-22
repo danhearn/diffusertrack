@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 import os
 import torch
+import uuid
 import numpy as np
 from diffusers import DiffusionPipeline
 
@@ -57,10 +58,15 @@ class AudioProcessor:
                 if self.is_audio_file(file_path):
                     self.mel.load_audio(file_path)
                     im = self.mel.audio_slice_to_image(0)
+                    # Create a unique filename using the original file name and chunk index
+                    base_name = os.path.splitext(file)[0]
                     mel_output_dir = os.path.join(self.output_dir, "mel_spectrograms")
                     if not os.path.exists(mel_output_dir):
                         os.makedirs(mel_output_dir)
-                    im.save(os.path.join(mel_output_dir, f"{os.path.splitext(file)[0]}.png"))
+                    # Generate a unique name for the spectrogram
+                    unique_filename = f"{base_name}_{uuid.uuid4()}.png"
+                    im.save(os.path.join(mel_output_dir, unique_filename))
+                    print(f"Saved mel spectrogram: {unique_filename}")
 
     def process_directory(self):
         # Process all files in the input directory
