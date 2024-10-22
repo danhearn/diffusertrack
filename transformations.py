@@ -30,12 +30,12 @@ def gradient():
         return x
     return fn
     
-def scale(r):
+def scale(min_val, max_val):
     """
     Return a function that scales a tensor between min and max based on the tensor's min and max.
     """
     def fn(x):
-        min_val, max_val = r
+        
         xmin = x.min()
         xmax = x.max()
         x = (x - xmin) / (xmax - xmin) * (max_val - min_val) + min_val #!! this doesn't return tensor??

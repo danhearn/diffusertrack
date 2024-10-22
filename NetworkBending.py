@@ -41,7 +41,7 @@ class NetworkBending:
 
     def osc_receive(self, address: str, *args):
         """Receive OSC messages and update the network bending parameters."""
-        print(f"Received OSC message: Address: {address}, Arguments: {args}")
+        #print(f"Received OSC message: Address: {address}, Arguments: {args}")
 
         if address == "/layer": 
             self.layer_selection = int(args[0])
@@ -113,19 +113,19 @@ class NetworkBending:
             
         if self.bend_scale == 1:
             if not self.normalize_bend:
-                sample = scale(self.scale_factor)(sample)
+                sample = scale(0, self.scale_factor)(sample)
             else:
                 sample = normalize(scale(self.scale), dim=1)(sample)
 
         if self.bend_erosion == 1:
             if not self.normalize_bend:
-                sample = erosion(1)(sample)
+                sample = erosion(10)(sample)
             else:
                 sample = normalize(erosion(1), dim=1)(sample)
 
         if self.bend_dilation == 1:
             if not self.normalize_bend:
-                sample = dilation(1)(sample)
+                sample = dilation(10)(sample)
             else:
                 sample = normalize(dilation(1), dim=1)(sample)
             
