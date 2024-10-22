@@ -1,7 +1,7 @@
 /diffusers_local
 /diffusertrack.code-workspace
 /audio-diffusion
-/data
+#/data
 /thesis/thesis.lot
 /thesis/thesis.out
 /thesis/thesis.bbl
