@@ -81,72 +81,79 @@ class NetworkBending:
             self.bend_rotate_y = int(args[0])
         elif address == "/rotate_z":
             self.bend_rotate_z = int(args[0])
-        
-    def network_bend(self, layer_samples: tuple = None):
-        
-        samples = list(layer_samples)  # Convert to list
-        sample = samples[self.layer_selection]
 
+    def apply_transform(self, sample):
+        # Apply transformations based on conditions
         if self.bend_rotate_x == 1:
-            if not self.normalize_bend:
-                sample = rotate_x(self.rotate_x_radian, scaling_factor=self.rotate_x_scaling_factor)(sample)
-            else:
-                sample = normalize(rotate_x(self.rotate_x_radian, scaling_factor=self.rotate_x_scaling_factor), dim=1)(sample)
+            sample = rotate_x(self.rotate_x_radian, self.rotate_x_scaling_factor)(sample)
 
         if self.bend_rotate_y == 1:
-            if not self.normalize_bend:
-                sample = rotate_y(self.rotate_y_radian, scaling_factor=self.rotate_y_scaling_factor)(sample)
-            else:
-                sample = normalize(rotate_y(self.rotate_y_radian, scaling_factor=self.rotate_y_scaling_factor), dim=1)(sample)
+            sample = rotate_y(self.rotate_y_radian, self.rotate_y_scaling_factor)(sample)
 
         if self.bend_rotate_z == 1:
-            if not self.normalize_bend:
-                sample = rotate_z(self.rotate_z_radian, scaling_factor=self.rotate_z_scaling_factor)(sample)
-            else:
-                sample = normalize(rotate_z(self.rotate_z_radian, scaling_factor=self.rotate_z_scaling_factor), dim=1)(sample)
-            
+            sample = rotate_z(self.rotate_z_radian, self.rotate_z_scaling_factor)(sample)
+
         if self.bend_reflect == 1:
-            if not self.normalize_bend:
-                sample = reflect(0)(sample)
-            else:
-                sample = normalize(reflect(0), dim=1)(sample)
-            
+            sample = reflect(0)(sample)
+
         if self.bend_scale == 1:
-            if not self.normalize_bend:
-                sample = scale(0, self.scale_factor)(sample)
-            else:
-                sample = normalize(scale(self.scale), dim=1)(sample)
+            sample = scale(0, self.scale_factor)(sample)
 
         if self.bend_erosion == 1:
-            if not self.normalize_bend:
-                sample = erosion(10)(sample)
-            else:
-                sample = normalize(erosion(1), dim=1)(sample)
+            sample = erosion(10)(sample)
 
         if self.bend_dilation == 1:
-            if not self.normalize_bend:
-                sample = dilation(10)(sample)
-            else:
-                sample = normalize(dilation(1), dim=1)(sample)
-            
+            sample = dilation(10)(sample)
+
         if self.bend_gradient == 1:
-            if not self.normalize_bend:
-                sample = gradient()(sample)
-            else:
-                sample = normalize(gradient(), dim=1)(sample)
+            sample = gradient()(sample)
 
         if self.bend_sobel == 1:
-            if not self.normalize_bend:
-               sample = sobel()(sample)
-            else:
-                sample = normalize(sobel(), dim=1)(sample)
+            sample = sobel()(sample)
 
         if self.bend_add_rand_rows == 1:
-            if not self.normalize_bend:
-                sample = add_rand_rows(10)(sample)
-            else:
-                sample = normalize(add_rand_rows(10), dim=1)(sample)
+            sample = add_rand_rows(10)(sample)
 
-        samples[self.layer_selection] = sample
+        return sample
 
-        return tuple(samples)
+    # this function takes multiple samples at once
+    def network_bend(self, layer_samples: any = None, layer_id: str = None):
+        #print(f"network_bend called with layer_selection: {self.layer_selection}, layer_id: {layer_id}")
+
+        if self.layer_selection >= 1 and self.layer_selection <= 12 and layer_id=="down_blocks": 
+            layer = self.layer_selection - 1
+            if isinstance(layer_samples, tuple):
+                samples = list(layer_samples)
+                if layer < len(samples):
+                    sample = samples[layer]
+                    sample = self.apply_transform(sample)
+                    if sample is None:
+                        raise ValueError("apply_transform returned None.")
+                    samples[layer] = sample
+                    return tuple(samples)
+                else:
+                    raise IndexError(f"Layer selection {layer} is out of bounds for the samples.")
+
+        elif self.layer_selection == 0 and layer_id == "preprocessing_layer":
+            sample = self.apply_transform(layer_samples)
+            if sample is None:
+                raise ValueError("apply_transform preprocessing_layer returned None.")
+            return sample
+
+        elif self.layer_selection == 13 and layer_id == "postprocessing_layer_1":
+            sample = self.apply_transform(layer_samples)
+            if sample is None:
+                raise ValueError("apply_transform postprocessing_layer_1 returned None.")
+            return sample
+
+        elif self.layer_selection == 14 and layer_id == "postprocessing_layer_2":
+            sample = self.apply_transform(layer_samples)
+            if sample is None:
+                raise ValueError("apply_transform postprocessing_layer_2 returned None.")
+            return sample
+
+        else: return layer_samples
+
+        # If we reach here, raise the error with details
+        raise ValueError(f"Invalid layer_selection ({self.layer_selection}) or layer_id ({layer_id}).")
+
