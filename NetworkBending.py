@@ -120,7 +120,7 @@ class NetworkBending:
     def network_bend(self, layer_samples: any = None, layer_id: str = None):
         #print(f"network_bend called with layer_selection: {self.layer_selection}, layer_id: {layer_id}")
 
-        if self.layer_selection >= 1 and self.layer_selection <= 12 and layer_id=="down_blocks": 
+        if self.layer_selection >= 1 and self.layer_selection <= 12 and layer_id=="downsampling_layers": 
             layer = self.layer_selection - 1
             if isinstance(layer_samples, tuple):
                 samples = list(layer_samples)
