@@ -38,7 +38,7 @@ def scale(min_val, max_val):
         
         xmin = x.min()
         xmax = x.max()
-        x = (x - xmin) / (xmax - xmin) * (max_val - min_val) + min_val #!! this doesn't return tensor??
+        x = (x - xmin) / (xmax - xmin) * (max_val - min_val) + min_val 
         return x
     return fn
     
