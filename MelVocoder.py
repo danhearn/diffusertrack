@@ -1,6 +1,9 @@
 from melgan.modules import Generator_melgan
 import torch
+from torchvision import transforms
+import torch.nn.functional as F
 import numpy as np
+from PIL import Image
 
  #MelGAN vocoder model
 
@@ -10,10 +13,11 @@ class MelVocoder:
         self.model_name = model_name
         self.feat_dim = 80  # Feature dimension
         self.mean_fp = 'data/drumbeats_1bar/mean.mel.npy'
-        self.std_fp = 'data/drumbeats_1bar/std.mel.npy'
+        self.std_fp = 'data/drumbeats_1bar/std.mel.npy' #these are actually 256
         self.n_mel_channels = 80
         self.ngf = 32
         self.n_residual_layers = 3
+        self.pil_to_tensor = transforms.ToTensor()
         
         # Load mean and std normalization parameters
         self.v_mean, self.v_std = self._load_normalization_params()
@@ -23,6 +27,7 @@ class MelVocoder:
 
     def _load_normalization_params(self):
         """Loads normalization parameters for the Mel spectrogram."""
+
         v_mean = torch.from_numpy(np.load(self.mean_fp)).float().view(1, self.feat_dim, 1).to(self.device)
         v_std = torch.from_numpy(np.load(self.std_fp)).float().view(1, self.feat_dim, 1).to(self.device)
         return v_mean, v_std
@@ -39,6 +44,28 @@ class MelVocoder:
 
     def vocode(self, sample):
         """Generates audio output from a Mel spectrogram sample."""
-        de_norm = sample.squeeze(0) * self.v_std + self.v_mean
+
+        # Check if the input is a PIL Image and convert to tensor if so
+        if isinstance(sample, Image.Image):
+            sample = self.pil_to_tensor(sample).unsqueeze(0).to(self.device)  # Add batch dimension and move to device
+            print(f"Sample shape adjusted to {sample.shape}")
+
+        if sample.shape[2] != self.n_mel_channels:  # Ensure the height equals 80 frequency bins
+            sample = sample[:, :, :self.n_mel_channels, :] 
+            print(f"Sample shape adjusted to {sample.shape}")
+
+        # Ensure the sample is in the expected shape for 256 frequency bins
+        if sample.shape[2] != self.n_mel_channels:
+            raise ValueError(f"Expected sample with {self.n_mel_channels} channels, but got {sample.shape[2]}")
+
+        # De-normalize the sample and pass it through the vocoder
+        de_norm = sample.squeeze(0) * self.v_std + self.v_mean  # Adjust to have no batch dimension
         audio_output = self.vocoder(de_norm)
-        return audio_output
+        print(f"Audio output shape: {audio_output.shape}")
+
+        # Convert to numpy for inspection or further processing
+        audio_numpy = audio_output.squeeze().cpu().numpy()
+
+        return audio_numpy
+
+
