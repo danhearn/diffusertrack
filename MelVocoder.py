@@ -50,13 +50,13 @@ class MelVocoder:
             sample = self.pil_to_tensor(sample).unsqueeze(0).to(self.device)  # Add batch dimension and move to device
             print(f"Sample shape adjusted to {sample.shape}")
 
-        if sample.shape[2] != self.n_mel_channels:  # Ensure the height equals 80 frequency bins
-            sample = sample[:, :, :self.n_mel_channels, :] 
-            print(f"Sample shape adjusted to {sample.shape}")
+        # if sample.shape[2] != self.n_mel_channels:  # Ensure the height equals 80 frequency bins
+        #     sample = sample[:, :, :self.n_mel_channels, 320] 
+        #     print(f"Sample shape adjusted to {sample.shape}")
 
-        # Ensure the sample is in the expected shape for 256 frequency bins
-        if sample.shape[2] != self.n_mel_channels:
-            raise ValueError(f"Expected sample with {self.n_mel_channels} channels, but got {sample.shape[2]}")
+        if sample.shape[2] != 80 or sample.shape[3] != 320:
+            sample = F.interpolate(sample, size=(80, 320), mode='bilinear', align_corners=False)
+            print(f"Sample resized to {sample.shape}")
 
         # De-normalize the sample and pass it through the vocoder
         de_norm = sample.squeeze(0) * self.v_std + self.v_mean  # Adjust to have no batch dimension

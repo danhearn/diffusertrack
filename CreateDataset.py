@@ -13,8 +13,8 @@ class AudioProcessor:
         self.chunk_length_ms = chunk_length_ms
         self.device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
         self.vocoder = MelVocoder(self.device)
-        self.unet = UNet2DModel.from_pretrained("teticio/latent-audio-diffusion-512", subfolder="unet")
-        self.scheduler = DDIMScheduler.from_pretrained("teticio/latent-audio-diffusion-512", subfolder="scheduler")
+        self.unet = UNet2DModel.from_pretrained("teticio/audio-diffusion-256", subfolder="unet")
+        self.scheduler = DDIMScheduler.from_pretrained("teticio/audio-diffusion-256", subfolder="scheduler")
         self.mel = Mel()
 
         self.pipe = AudioDiffusionPipeline(
