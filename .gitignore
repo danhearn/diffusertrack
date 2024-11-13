@@ -1,7 +1,12 @@
 diffusers_local/                    
 /diffusertrack.code-workspace
 /audio-diffusion
-#/data
+/data
+/data/mel_spectrograms
+/recorded_audio
+/recorded_npy
+/recorded_images
+/results
 /thesis/thesis.lot
 /thesis/thesis.out
 /thesis/thesis.bbl

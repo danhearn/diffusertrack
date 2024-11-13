@@ -3,7 +3,8 @@ import os
 import torch
 import uuid
 import numpy as np
-from diffusers import DiffusionPipeline
+from diffusers_local import AudioDiffusionPipeline, DDIMScheduler, UNet2DModel, Mel
+from MelVocoder import MelVocoder
 
 class AudioProcessor:
     def __init__(self, input_dir, output_dir="data", chunk_length_ms=6000):
@@ -11,8 +12,18 @@ class AudioProcessor:
         self.output_dir = output_dir
         self.chunk_length_ms = chunk_length_ms
         self.device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
-        self.pipe = DiffusionPipeline.from_pretrained("teticio/audio-diffusion-ddim-256").to(self.device)
-        self.mel = self.pipe.mel
+        self.vocoder = MelVocoder(self.device)
+        self.unet = UNet2DModel.from_pretrained("teticio/audio-diffusion-256", subfolder="unet")
+        self.scheduler = DDIMScheduler.from_pretrained("teticio/audio-diffusion-256", subfolder="scheduler")
+        self.mel = Mel()
+
+        self.pipe = AudioDiffusionPipeline(
+            vqvae=None,  # Assuming no VQ-VAE is needed; adjust if required
+            unet=self.unet,
+            mel=self.mel,
+            vocoder=self.vocoder,
+            scheduler=self.scheduler,
+        )
 
         # Ensure output directory exists
         if not os.path.exists(self.output_dir):
