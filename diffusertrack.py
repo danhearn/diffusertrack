@@ -60,6 +60,7 @@ class Diffusertrack:
         self.diffusion_steps = 10
         self.generate = 1
         self.save = 0
+        self.generate_griffin_lim = 0
 
         #OSC PARAMETERS AND SERVERS
         self.osc_lock = threading.Lock()
@@ -95,6 +96,7 @@ class Diffusertrack:
         osc_dispatcher.map("/loop", self.inference)
         osc_dispatcher.map("/generate", self.inference)
         osc_dispatcher.map("/save", self.inference)
+        osc_dispatcher.map("/grifflim", self.inference)
 
         self.receive_server = osc_server.ThreadingOSCUDPServer((self.ip, self.port_receive), osc_dispatcher)
         self.send_server = udp_client.SimpleUDPClient(self.ip, self.port_send)
@@ -160,6 +162,8 @@ class Diffusertrack:
             self.generate = int(args[0])
         if address == "/save":
             self.save = int(args[0])
+        if address == "/grifflim":
+            self.generate_griffin_lim = int(args[0])
 
     def send_osc(self,address, value):
         """Send OSC message
@@ -200,11 +204,13 @@ def main():
              
                     output = self.audio_diffusion(
                         steps=self.diffusion_steps,
+                        generate_griffin_lim=self.generate_griffin_lim,
                         noise=AudioDiffusionPipeline.slerp(
                             self.encoded_images[self.latent1], 
                             self.encoded_images[self.latent2], 
                             self.alpha), 
-                        eta=0)
+                            eta=0,
+                        )
 
                     output.images[0].save("generated_image.png")
                     audio = output.audios[0, 0]
