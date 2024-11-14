@@ -186,7 +186,7 @@ def main():
     parser.add_argument("--enable_sampling", type=bool, default=False, help="Enable sampling of generated images and audio")
     args = parser.parse_args()
 
-    self = Diffusertrack(vocoder_checkpoint_file=args.vocoder_checkpoint_file, 
+    dt = Diffusertrack(vocoder_checkpoint_file=args.vocoder_checkpoint_file, 
                          device=args.device, spectrogram_dir=args.spectrogram_dir, 
                          port_receive=args.port_receive, port_send=args.port_send, 
                          ip=args.ip, 
@@ -198,39 +198,39 @@ def main():
 
     try:
         while True:
-            with self.osc_lock: 
+            with dt.osc_lock: 
 
-                if self.generate == 1:
+                if dt.generate == 1:
              
-                    output = self.audio_diffusion(
-                        steps=self.diffusion_steps,
-                        generate_griffin_lim=self.generate_griffin_lim,
+                    output = dt.audio_diffusion(
+                        steps=dt.diffusion_steps,
+                        generate_griffin_lim=dt.generate_griffin_lim,
                         noise=AudioDiffusionPipeline.slerp(
-                            self.encoded_images[self.latent1], 
-                            self.encoded_images[self.latent2], 
-                            self.alpha), 
+                            dt.encoded_images[dt.latent1], 
+                            dt.encoded_images[dt.latent2], 
+                            dt.alpha), 
                             eta=0,
                         )
 
                     output.images[0].save("generated_image.png")
                     audio = output.audios[0, 0]
-                    sf.write("output_audio.wav", audio, self.audio_diffusion.mel.get_sample_rate())
+                    sf.write("output_audio.wav", audio, dt.audio_diffusion.mel.get_sample_rate())
 
-                    if self.save == 1 and self.enable_sampling:
+                    if dt.save == 1 and dt.enable_sampling:
 
                         step += 1
 
-                        audio_samples_dir = os.path.join(self.audio_results_dir, f"layer_{self.NB.layer_selection}_output_audio_{step}.wav")
-                        image_samples_dir = os.path.join(self.image_results_dir, f"layer_{self.NB.layer_selection}_generated_image_{step}.png")
+                        audio_samples_dir = os.path.join(dt.audio_results_dir, f"layer_{dt.NB.layer_selection}_output_audio_{step}.wav")
+                        image_samples_dir = os.path.join(dt.image_results_dir, f"layer_{dt.NB.layer_selection}_generated_image_{step}.png")
 
-                        sf.write(audio_samples_dir, audio, self.audio_diffusion.mel.get_sample_rate())
+                        sf.write(audio_samples_dir, audio, dt.audio_diffusion.mel.get_sample_rate())
                         output.images[0].save(image_samples_dir)
 
-                        self.save = 0
+                        dt.save = 0
 
-                    self.send_osc("/generated", 1)
+                    dt.send_osc("/generated", 1)
     except KeyboardInterrupt:
-        self.receive_server.shutdown()
+        dt.receive_server.shutdown()
         print("SHUT DOWN COMPLETE.")
 
 if __name__ == "__main__":
