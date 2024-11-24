@@ -12,18 +12,26 @@ import numpy as np
 from datasets import load_dataset
 from diffusers_local import DDIMScheduler, AudioDiffusionPipeline, UNet2DModel as UNet2DModel_local, Mel
 import soundfile as sf
-from CreateDataset import AudioProcessor
+from CreateDatasetv2 import AudioProcessor
 from pythonosc import dispatcher, osc_server, udp_client
 from NetworkBending import NetworkBending
 from HifiVocoder import HifiVocoder
 
 
 class Diffusertrack: 
-    def __init__(self, vocoder_checkpoint_file, device, spectrogram_dir, port_receive, port_send, ip, enable_sampling):
+    
+    """Class to control the diffusion process and OSC communication
+    """
+    def __init__(self, vocoder_checkpoint_file, device, spectrogram_dir, port_receive, port_send, ip, enable_sampling, dataset_input_dir=None):
         """Initialise the Diffusertrack class
         Args:
             vocoder_checkpoint_file (str): Path to the vocoder checkpoint file
             device (str): Device to run the model on
+            spectrogram_dir (str): Path to the directory containing the spectrogram images 
+            port_receive (int): Port to receive OSC messages
+            port_send (int): Port to send OSC messages
+            ip (str): IP address for OSC communication
+            enable_sampling (bool): Enable sampling of generated images and audio
         """
         self.root_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -105,30 +113,44 @@ class Diffusertrack:
         osc_thread.daemon = True # This will allow the main program to exit even if the OSC server is still running
         osc_thread.start()
 
-        print("OSC receive server started on port", self.port_receive)
-        print("OSC send server started on port", self.port_send)
+        print(f"-----------------OSC RECEIVER STARTED ON PORT: {self.port_receive}-----------------")
+        print(f"-----------------OSC SENDER STARTED ON PORT: {self.port_send}-----------------")
         
         #ENCODE IMAGES TO NOISE
         self.encoded_images = []
-        self.spectrogram_dir = os.path.join(self.root_path, spectrogram_dir)
+        if dataset_input_dir is not None:
+            self.spectrogram_dir = self.create_dataset(dataset_input_dir)
+        else:
+            self.spectrogram_dir = os.path.join(self.root_path, spectrogram_dir)
+        
         self.encode_images(self.spectrogram_dir)
 
-
+    def create_dataset(self, input_dir):
+        """Create the dataset for the diffusion process
+        Args:
+            input_dir (str): Path to the directory containing the audio files
+            output_spectrograms_dir (str): Path to the directory to save the spectrogram images
+        """
+        print("-----------------CONVERTING AUDIO TO SPECTROGRAMS...-----------------")
+        audio_processor = AudioProcessor(input_dir=input_dir)
+        audio_processor.process_directory()
+        print("-----------------CONVERSTION COMPLETE!-----------------")
+        return audio_processor.mel_output_dir
 
     def encode_images(self, spectrogram_dir):
         """Encode the images to seed the diffusion process
         Args:
             spectrogram_dir (str): Path to the directory containing the spectrogram images
         """
-        print("Encoding images...")
+        print("-----------------ENCODING IMAGES...-----------------")
         file_names = os.listdir(spectrogram_dir)
-        random_indexes = random.sample(range(len(file_names)), 10)
+        random_indexes = list(range(min(10, len(file_names))))
         for i in random_indexes:
             spectrogram_path = os.path.join(self.spectrogram_dir, file_names[i])
             spectrogram_image = Image.open(spectrogram_path).convert("L")
             encoded_image = self.audio_diffusion.encode([spectrogram_image], steps=100)
             self.encoded_images.append(encoded_image)
-        print("Images encoded.")
+        print("-----------------IMAGES ENCODED!-----------------")
 
 
     def interpolation(self, address, *args):
@@ -173,6 +195,7 @@ class Diffusertrack:
         """
         self.send_server.send_message(address, value)
 
+
 def main():
     """Main loop for image generation and OSC communication
     """
@@ -184,13 +207,15 @@ def main():
     parser.add_argument("--port_send", type=int, default=1111, help="Port to send OSC messages")
     parser.add_argument("--ip", type=str, default="127.0.0.1", help="IP address for OSC communication")
     parser.add_argument("--enable_sampling", type=bool, default=False, help="Enable sampling of generated images and audio")
+    parser.add_argument("--dataset_input_dir", type=str, default=None, help="Path to the directory containing the audio files for dataset creation")
     args = parser.parse_args()
 
     dt = Diffusertrack(vocoder_checkpoint_file=args.vocoder_checkpoint_file, 
                          device=args.device, spectrogram_dir=args.spectrogram_dir, 
                          port_receive=args.port_receive, port_send=args.port_send, 
                          ip=args.ip, 
-                         enable_sampling=args.enable_sampling
+                         enable_sampling=args.enable_sampling,
+                            dataset_input_dir=args.dataset_input_dir
                          )
 
     # Main loop for image generation
@@ -220,8 +245,8 @@ def main():
 
                         step += 1
 
-                        audio_samples_dir = os.path.join(dt.audio_results_dir, f"layer_{dt.NB.layer_selection}_output_audio_{step}.wav")
-                        image_samples_dir = os.path.join(dt.image_results_dir, f"layer_{dt.NB.layer_selection}_generated_image_{step}.png")
+                        audio_samples_dir = os.path.join(dt.audio_results_dir, f"l{dt.NB.layer_selection}rx{dt.NB.bend_rotate_x}ry{dt.NB.bend_rotate_y}rz{dt.NB.bend_rotate_z}d{dt.NB.bend_dilation}e{dt.NB.bend_erosion}rf{dt.NB.bend_reflect}g{dt.NB.bend_gradient}inf{dt.diffusion_steps}_output_audio_{step}.wav")
+                        image_samples_dir = os.path.join(dt.image_results_dir, f"l{dt.NB.layer_selection}rx{dt.NB.bend_rotate_x}ry{dt.NB.bend_rotate_y}rz{dt.NB.bend_rotate_z}d{dt.NB.bend_dilation}e{dt.NB.bend_erosion}rf{dt.NB.bend_reflect}g{dt.NB.bend_gradient}inf{dt.diffusion_steps}_generated_image_{step}.png")
 
                         sf.write(audio_samples_dir, audio, dt.audio_diffusion.mel.get_sample_rate())
                         output.images[0].save(image_samples_dir)
@@ -229,9 +254,11 @@ def main():
                         dt.save = 0
 
                     dt.send_osc("/generated", 1)
+
     except KeyboardInterrupt:
         dt.receive_server.shutdown()
-        print("SHUT DOWN COMPLETE.")
+        print("---------------SHUT DOWN COMPLETE.------------------")
+
 
 if __name__ == "__main__":
     main()

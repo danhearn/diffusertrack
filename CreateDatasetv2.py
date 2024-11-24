@@ -4,7 +4,7 @@ import torch
 import uuid
 import numpy as np
 from diffusers_local import AudioDiffusionPipeline, DDIMScheduler, UNet2DModel, Mel
-from MelVocoder import MelVocoder
+from HifiVocoder import HifiVocoder
 import string
 
 
@@ -14,7 +14,7 @@ class AudioProcessor:
         self.output_dir = output_dir
         self.chunk_length_ms = chunk_length_ms
         self.device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
-        self.vocoder = MelVocoder(self.device)
+        self.vocoder = HifiVocoder(checkpoint_file="hifigan\hifi256\g_00280000")
         self.unet = UNet2DModel.from_pretrained("teticio/audio-diffusion-256", subfolder="unet")
         self.scheduler = DDIMScheduler.from_pretrained("teticio/audio-diffusion-256", subfolder="scheduler")
         self.mel = Mel()

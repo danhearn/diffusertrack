@@ -97,13 +97,13 @@ class NetworkBending:
             sample = reflect(0)(sample)
 
         if self.bend_scale == 1:
-            sample = scale(0, self.scale_factor)(sample)
+            sample = scale(1, self.scale_factor)(sample)
 
         if self.bend_erosion == 1:
-            sample = erosion(10)(sample)
+            sample = erosion(20)(sample)
 
         if self.bend_dilation == 1:
-            sample = dilation(10)(sample)
+            sample = dilation(20)(sample)
 
         if self.bend_gradient == 1:
             sample = gradient()(sample)

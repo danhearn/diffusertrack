@@ -1155,7 +1155,7 @@
 					"presentation" : 1,
 					"presentation_rect" : [ 513.0, 443.0, 18.0, 162.0 ],
 					"size" : 10,
-					"value" : 3,
+					"value" : 6,
 					"varname" : "radiogroup"
 				}
 
@@ -1465,8 +1465,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 720.5, 657.0, 69.0, 22.0 ],
-					"text" : "/scale_z $1"
+					"patching_rect" : [ 720.5, 657.0, 57.0, 22.0 ],
+					"text" : "/scale $1"
 				}
 
 			}
