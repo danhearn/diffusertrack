@@ -18,11 +18,11 @@ This is a copy of the Diffusertrack repository that was used to experiment and c
 
 
 ### Code References 
-https://github.com/teticio/audio-diffusion - Audio Diffusion 
-https://github.com/descriptinc/melgan-neurips - MelGan
-https://github.com/jik876/hifi-gan - Hifi-Gan
-https://github.com/huggingface/diffusers - HuggingFace Diffusers
-https://github.com/dzluke/DAFX2024 - Network Bending Diffusion Models
+- https://github.com/teticio/audio-diffusion Audio Diffusion 
+- https://github.com/descriptinc/melgan-neurips MelGan
+- https://github.com/jik876/hifi-gan Hifi-Gan
+- https://github.com/huggingface/diffusers HuggingFace Diffusers
+- https://github.com/dzluke/DAFX2024 Network Bending Diffusion Models
 
 ### LLM Statement 
 Throughout the development of this project I used GitHub Co-pilot and ChatGPT to assist in writing, debugging and explaining code.
