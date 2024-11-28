@@ -1,3 +1,6 @@
+# NOTE:Here is a copy of the original unet_2d_condition.py file from the huggingface library where the NetworkBending class was added. 
+# Network bending is applied in the forward method.
+
 # Copyright 2024 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

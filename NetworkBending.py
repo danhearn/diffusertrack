@@ -1,5 +1,5 @@
-#from pythonosc import  
-#from typing import Optional
+# LLM Statement: Elements of this code ware written with the assistance of GitHub co-pilot and/or ChatGPT.
+
 from transformations import (
     erosion,
     dilation,

@@ -1,3 +1,5 @@
+# This code was adapted from HiFi-GAN (See references in the README.md file)
+
 import math
 import os
 import random

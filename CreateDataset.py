@@ -1,3 +1,7 @@
+# LLM Statement: Elements of this code were written with the assistance of GitHub co-pilot and/or ChatGPT.
+#This file creates a class that processes audio files in a directory by splitting them into chunks and converting them to mel spectrograms.
+
+
 from pydub import AudioSegment
 import os
 import torch

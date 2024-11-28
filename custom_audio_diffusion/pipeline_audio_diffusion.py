@@ -1,3 +1,5 @@
+## NOTE:This is a copy of Audio Diffusion pipeline where I have added HiFi-GAN neural inversion.
+
 # Copyright 2024 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +27,7 @@ from ....schedulers import DDIMScheduler, DDPMScheduler
 from ....utils.torch_utils import randn_tensor
 from ...pipeline_utils import AudioPipelineOutput, BaseOutput, DiffusionPipeline, ImagePipelineOutput
 from .mel import Mel
-from MelVocoder import MelVocoder
+from HifiVocoder import HifiVocoder
 
 
 class AudioDiffusionPipeline(DiffusionPipeline):
@@ -54,7 +56,7 @@ class AudioDiffusionPipeline(DiffusionPipeline):
         vqvae: AutoencoderKL,
         unet: UNet2DConditionModel,
         mel: Mel,
-        vocoder: MelVocoder,
+        vocoder: HifiVocoder,
         scheduler: Union[DDIMScheduler, DDPMScheduler],
     ):
         super().__init__()
@@ -264,6 +266,7 @@ class AudioDiffusionPipeline(DiffusionPipeline):
             else (Image.fromarray(_, mode="RGB").convert("L") for _ in images)
         )
 
+        # -------------VOCODER IMPLEMENTATION-----------------------
         #gives the option to generate audio using griffin lim or HiFi-GAN
         if generate_griffin_lim == 0:
             audios = [self.vocoder.vocode(_) for _ in images]
