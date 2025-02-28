@@ -1,5 +1,5 @@
 
-# Diffusertrack - submission version 
+# Diffusertrack (Development Repo) - Diffusion Based Networkbending M4L Device
 
 This is a copy of the Diffusertrack repository that was used to experiment and create the system. 
 
